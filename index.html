@@ -373,7 +373,7 @@ function render(){
   const diff=toUtcDayNumber(target)-toUtcDayNumber(start);
   const no=diff+1;
 
-  if(no<1||no>86){
+  if(no<1||no>93){
     resultArea.innerHTML="범위를 벗어난 날짜입니다.";
     statusBox.textContent="";
     return;
@@ -387,7 +387,7 @@ function render(){
   const allToCopy     = `${v.ref} (${v.title})\n\n[암송]\n${v.verse}\n\n[해설]\n${v.explanation}`;
 
   resultArea.innerHTML=`
-    <div class="badge">암송 ${v.no} / 86</div>
+    <div class="badge">암송 ${v.no} / 93</div>
     <div class="title">${v.ref} (${v.title})</div>
     <div class="meta">시작일 ${start} · 조회일 ${target}</div>
 
@@ -453,4 +453,5 @@ init();
 </script>
 </body>
 </html>
+
 
