@@ -8,50 +8,112 @@
 
 <style>
 :root{
-  --bg:#f4f8ff;
-  --card:#ffffff;
-  --primary:#2f6fed;
-  --primary-soft:#eaf1ff;
-  --text:#1c2433;
-  --muted:#6b768a;
-  --border:#e3eaf5;
+  /* Paper */
+  --paper:#fffdf8;
+  --paper2:#fffaf0;
+
+  /* Ink */
+  --text:#1f2430;
+  --muted:#6b7280;
+
+  /* Accent (bulletin-like) */
+  --accent:#1f3b66;       /* 잔잔한 남색 */
+  --accent-soft:#eef3fb;  /* 옅은 남색 배경 */
+  --gold:#b6922e;         /* 포인트 금색 */
+
+  --border:rgba(31,36,48,.10);
   --radius:18px;
+  --shadow:0 10px 26px rgba(31,36,48,.08);
 }
+
 *{box-sizing:border-box;}
+html,body{height:100%;}
+
 body{
   margin:0;
-  font-family: -apple-system,BlinkMacSystemFont,"Noto Sans KR","Noto Sans JP",system-ui,sans-serif;
-  background: linear-gradient(180deg,#eef4ff 0%,#f9fbff 100%);
+  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Noto Sans JP",system-ui,sans-serif;
   color:var(--text);
-}
-.safe{
-  padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom)) 16px;
-}
-.wrap{max-width:760px;margin:auto;display:flex;flex-direction:column;gap:16px;}
-header{padding:18px 16px 10px 16px;}
-h1{margin:0;font-size:20px;font-weight:800;color:var(--primary);}
-.sub{font-size:13px;color:var(--muted);margin-top:4px;}
 
+  /* 아주 약한 종이 질감 + 따뜻한 톤 */
+  background:
+    radial-gradient(900px 500px at 50% -20%, rgba(182,146,46,.10), transparent 60%),
+    radial-gradient(900px 500px at 10% 0%, rgba(31,59,102,.10), transparent 55%),
+    linear-gradient(180deg, var(--paper2) 0%, var(--paper) 55%, #ffffff 100%);
+}
+
+.safe{
+  padding:max(18px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom)) 16px;
+}
+
+.wrap{
+  max-width:760px;
+  margin:auto;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* 헤더: 주보 타이틀 느낌 */
+header{
+  padding:22px 18px 10px 18px;
+  border-bottom:1px solid rgba(31,36,48,.08);
+}
+
+h1{
+  margin:0;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:-.2px;
+  color:var(--accent);
+}
+
+.sub{
+  font-size:12.5px;
+  color:var(--muted);
+  margin-top:7px;
+  line-height:1.45;
+}
+
+/* 카드: 종이 카드 */
 .card{
-  background:var(--card);
+  background:rgba(255,255,255,.88);
+  border:1px solid rgba(31,36,48,.10);
   border-radius:var(--radius);
-  box-shadow:0 8px 24px rgba(47,111,237,.08);
-  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  overflow:hidden;
 }
 .cardPad{padding:18px;}
 
+/* 상단 배지: 주보의 작은 캡션 */
 .badge{
-  display:inline-block;
-  padding:6px 12px;
-  background:var(--primary-soft);
-  color:var(--primary);
-  font-weight:700;
-  font-size:13px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
   border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  color:var(--accent);
+  background:linear-gradient(180deg, #ffffff, var(--accent-soft));
+  border:1px solid rgba(31,59,102,.18);
 }
-.title{margin-top:10px;font-size:18px;font-weight:800;}
-.meta{font-size:13px;color:var(--muted);margin-top:2px;}
 
+/* 제목 */
+.title{
+  margin-top:10px;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:-.2px;
+  line-height:1.25;
+}
+
+.meta{
+  font-size:12.5px;
+  color:var(--muted);
+  margin-top:5px;
+}
+
+/* 섹션 타이틀 줄: 얇은 라인 + 금색 포인트 */
 .sectionTitleRow{
   margin-top:18px;
   display:flex;
@@ -60,72 +122,122 @@ h1{margin:0;font-size:20px;font-weight:800;color:var(--primary);}
   gap:10px;
 }
 .sectionTitle{
-  font-size:13px;
-  font-weight:700;
-  color:var(--muted);
+  font-size:12px;
+  font-weight:900;
+  color:var(--accent);
   margin:0;
+  letter-spacing:.4px;
+  position:relative;
+  padding-left:10px;
 }
-.verseBox{
-  margin-top:6px;
-  padding:16px;
-  border-radius:14px;
-  background:var(--primary-soft);
-  border:1px solid #dce6ff;
-  font-size:18px;
-  font-weight:700;
-  line-height:1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.explainBox{
-  margin-top:6px;
-  padding:14px;
-  border-radius:14px;
-  background:#fafcff;
-  border:1px solid var(--border);
-  font-size:18px;
-  line-height:1.6;
-  color:#3a4658;
-  white-space: pre-wrap;
-  word-break: break-word;
+.sectionTitle::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:50%;
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:var(--gold);
+  transform:translateY(-50%);
 }
 
+/* 암송 박스: ‘인용문’ 같은 느낌 */
+.verseBox{
+  margin-top:8px;
+  padding:16px 16px;
+  border-radius:16px;
+  background:linear-gradient(180deg, #ffffff, #fffaf0);
+  border:1px solid rgba(182,146,46,.22);
+  box-shadow:0 6px 16px rgba(182,146,46,.08);
+  font-size:18px;
+  font-weight:800;
+  line-height:1.7;
+  white-space:pre-wrap;
+  word-break:break-word;
+  position:relative;
+}
+.verseBox::before{
+  content:"“";
+  position:absolute;
+  left:12px;
+  top:6px;
+  font-size:26px;
+  font-weight:900;
+  color:rgba(182,146,46,.45);
+}
+
+/* 해설: 종이 여백 느낌 */
+.explainBox{
+  margin-top:8px;
+  padding:15px 16px;
+  border-radius:16px;
+  background:linear-gradient(180deg, #ffffff, #fcfcff);
+  border:1px solid rgba(31,36,48,.10);
+  font-size:17px;
+  line-height:1.75;
+  color:#2f3646;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+/* 날짜/컨트롤 */
 .controls{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
 }
-@media(max-width:480px){
+@media(max-width:520px){
   .controls{grid-template-columns:1fr;}
 }
+
 label{
   font-size:12px;
   color:var(--muted);
   display:block;
   margin-bottom:6px;
+  font-weight:900;
 }
+
 input[type="date"]{
   width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:1px solid var(--border);
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(31,36,48,.12);
   font-size:16px;
-  background:#fff;
+  background:rgba(255,255,255,.92);
+  outline:none;
   -webkit-appearance:none;
+  transition:box-shadow .15s ease, border-color .15s ease;
 }
+input[type="date"]:focus{
+  border-color:rgba(31,59,102,.35);
+  box-shadow:0 0 0 4px rgba(31,59,102,.10);
+}
+
+/* 버튼: 주보 느낌 = 과한 그라데이션/그림자 X, 단정하게 */
 button{
-  padding:12px;
-  border-radius:12px;
-  border:none;
-  background:var(--primary);
-  color:white;
-  font-size:15px;
-  font-weight:700;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(31,59,102,.18);
+  background:linear-gradient(180deg, #2a4c86, #1f3b66);
+  color:#fff;
+  font-size:14.5px;
+  font-weight:900;
+  letter-spacing:-.1px;
+  box-shadow:0 10px 22px rgba(31,59,102,.12);
+  transition:transform .06s ease, filter .15s ease;
 }
+button:active{transform:translateY(1px);}
+
 button.secondary{
-  background:#e1e9ff;
-  color:var(--primary);
+  background:linear-gradient(180deg, #ffffff, #f6f7fb);
+  color:var(--accent);
+  border:1px solid rgba(31,36,48,.14);
+  box-shadow:none;
 }
+
+/* 행 */
 .btnRow{
   display:flex;
   justify-content:space-between;
@@ -138,42 +250,48 @@ button.secondary{
   gap:10px;
   flex-wrap:wrap;
 }
+
+/* 미니 버튼(복사): 잉크+라인 */
 .miniBtn{
   padding:8px 10px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:#fff;
+  border-radius:12px;
+  border:1px solid rgba(31,36,48,.14);
+  background:rgba(255,255,255,.92);
   color:var(--text);
   font-size:12px;
-  font-weight:700;
+  font-weight:900;
+  box-shadow:none;
 }
-.miniBtn:hover{filter:brightness(0.98);}
+.miniBtn:hover{filter:brightness(0.99);}
+.miniBtn:active{transform:translateY(1px);}
+
 .status{
   margin-top:12px;
-  font-size:13px;
+  font-size:12.5px;
   color:var(--muted);
+  line-height:1.45;
 }
 
-/* 언어 토글 */
+/* 언어 토글: ‘탭’처럼 */
 .langRow{
   display:flex;
   justify-content:flex-end;
   gap:8px;
-  padding:0 16px 6px 16px;
+  padding:0 18px 6px 18px;
 }
 .langBtn{
-  padding:8px 10px;
+  padding:8px 12px;
   border-radius:999px;
-  border:1px solid var(--border);
-  background:#fff;
+  border:1px solid rgba(31,36,48,.14);
+  background:rgba(255,255,255,.92);
   color:var(--text);
   font-size:12px;
-  font-weight:800;
+  font-weight:900;
 }
 .langBtn.active{
-  border-color:#cfe0ff;
-  background:var(--primary-soft);
-  color:var(--primary);
+  border-color:rgba(182,146,46,.35);
+  background:linear-gradient(180deg, #fffdf6, #fff5da);
+  color:#7b5d10;
 }
 </style>
 </head>
@@ -579,6 +697,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
