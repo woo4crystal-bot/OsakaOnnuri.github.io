@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="color-scheme" content="light"/>
-<title>【오사카온누리】오늘의 성경 암송</title>
+<title>오늘의 성경암송|今日の暗唱聖句</title>
 
 <style>
 :root{
@@ -20,7 +20,7 @@
 *{box-sizing:border-box;}
 body{
   margin:0;
-  font-family: -apple-system,BlinkMacSystemFont,"Noto Sans KR",system-ui,sans-serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Noto Sans KR","Noto Sans JP",system-ui,sans-serif;
   background: linear-gradient(180deg,#eef4ff 0%,#f9fbff 100%);
   color:var(--text);
 }
@@ -74,9 +74,8 @@ h1{margin:0;font-size:20px;font-weight:800;color:var(--primary);}
   font-size:18px;
   font-weight:700;
   line-height:1.6;
-  
-  white-space: pre-wrap;   /* 줄바꿈/공백 유지 */
-  word-break: break-word;  /* 긴 문자열 줄바꿈 */
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .explainBox{
   margin-top:6px;
@@ -87,9 +86,8 @@ h1{margin:0;font-size:20px;font-weight:800;color:var(--primary);}
   font-size:18px;
   line-height:1.6;
   color:#3a4658;
-
-  white-space: pre-wrap;   /* 줄바꿈/공백 유지 */
-  word-break: break-word;  /* 긴 문자열 줄바꿈 */
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .controls{
@@ -150,11 +148,32 @@ button.secondary{
   font-weight:700;
 }
 .miniBtn:hover{filter:brightness(0.98);}
-
 .status{
   margin-top:12px;
   font-size:13px;
   color:var(--muted);
+}
+
+/* 언어 토글 */
+.langRow{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  padding:0 16px 6px 16px;
+}
+.langBtn{
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+  font-size:12px;
+  font-weight:800;
+}
+.langBtn.active{
+  border-color:#cfe0ff;
+  background:var(--primary-soft);
+  color:var(--primary);
 }
 </style>
 </head>
@@ -164,9 +183,14 @@ button.secondary{
   <div class="wrap">
 
     <header>
-      <h1>【오사카온누리】오늘의 성경 암송</h1>
-      <div class="sub">페이지를 열면 자동으로 오늘 암송이 표시됩니다.</div>
+      <h1 id="hdrTitle">【오사카온누리】오늘의 성경 암송</h1>
+      <div class="sub" id="hdrSub">페이지를 열면 자동으로 오늘 암송이 표시됩니다.</div>
     </header>
+
+    <div class="langRow">
+      <button id="btnKo" class="langBtn" type="button">한국어</button>
+      <button id="btnJa" class="langBtn" type="button">日本語</button>
+    </div>
 
     <div class="card">
       <div class="cardPad" id="resultArea"></div>
@@ -177,11 +201,11 @@ button.secondary{
 
         <div class="controls">
           <div>
-            <label>시작일 (암송1)</label>
+            <label id="lblStart">시작일 (암송1)</label>
             <input id="startDate" type="date"/>
           </div>
           <div>
-            <label>조회 날짜</label>
+            <label id="lblTarget">조회 날짜</label>
             <input id="targetDate" type="date"/>
           </div>
         </div>
@@ -197,7 +221,7 @@ button.secondary{
           </div>
         </div>
 
-        <div class="status" id="statusBox"></div>
+        <div class="status" id="statusBox" aria-live="polite"></div>
 
       </div>
     </div>
@@ -206,15 +230,13 @@ button.secondary{
 </div>
 
 <script>
-let VERSES = []; // ✅ JSON에서 로드
+let VERSES = []; // JSON에서 로드
 
 // ===== 날짜 유틸 (Safari 안정화)
 function toUtcDayNumber(str){
   const [y,m,d]=str.split("-").map(Number);
   return Math.floor(Date.UTC(y,m-1,d)/86400000);
 }
-
-// ✅ 오늘은 로컬 기준 YYYY-MM-DD
 function todayISO(){
   const d = new Date();
   const y = d.getFullYear();
@@ -222,8 +244,6 @@ function todayISO(){
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
-
-// ✅ YYYY-MM-DD에 일수 더하기/빼기 (UTC 자정 기준)
 function addDaysISO(str, delta){
   const [y,m,d] = str.split("-").map(Number);
   const ms = Date.UTC(y, m-1, d) + delta * 86400000;
@@ -236,13 +256,139 @@ function addDaysISO(str, delta){
 
 const DEFAULT_START="2026-02-08";
 const STORAGE_START="memorization_start_v4";
+const STORAGE_LANG="memorization_lang_v1";
 
 const startInput=document.getElementById("startDate");
 const targetInput=document.getElementById("targetDate");
 const resultArea=document.getElementById("resultArea");
 const statusBox=document.getElementById("statusBox");
 
-// ✅ JSON 로드
+const btnKo=document.getElementById("btnKo");
+const btnJa=document.getElementById("btnJa");
+
+const hdrTitle=document.getElementById("hdrTitle");
+const hdrSub=document.getElementById("hdrSub");
+const lblStart=document.getElementById("lblStart");
+const lblTarget=document.getElementById("lblTarget");
+const btnToday=document.getElementById("btnToday");
+const btnShow=document.getElementById("btnShow");
+const btnPrev=document.getElementById("btnPrev");
+const btnNext=document.getElementById("btnNext");
+
+// ===== i18n
+const I18N = {
+  ko: {
+    headerTitle: "오늘의 성경 암송【오사카온누리교회】",
+    headerSub: "페이지를 열면 자동으로 오늘 암송이 표시됩니다.",
+    startLabel: "시작일 (암송1)",
+    targetLabel: "조회 날짜",
+    todayBtn: "오늘로",
+    showBtn: "조회",
+    prevBtn: "이전",
+    nextBtn: "다음",
+    badgeErr: "오류",
+    loadFailTitle: "암송 데이터를 불러오지 못했습니다",
+    loadFailMeta: "verses.json 확인 필요",
+    loadFailHelp:
+`• 같은 폴더에 verses.json이 있는지
+• 파일이 valid JSON인지
+• 로컬 파일(file://)로 직접 열면(fetch) 차단될 수 있으니 서버/호스팅에서 열었는지 확인해 주세요`,
+    noData: "암송 데이터가 없습니다.",
+    outOfRange: "범위를 벗어난 날짜입니다.",
+    sectionVerse: "[암송구절]",
+    sectionExplain: "[해설]",
+    copyAll: "전체 복사",
+    copyVerse: "암송 복사",
+    copyExplain: "해설 복사",
+    copiedAll: "암송+해설이 복사되었습니다.",
+    copiedVerse: "암송이 복사되었습니다.",
+    copiedExplain: "해설이 복사되었습니다.",
+    copyFail: "복사에 실패했습니다. (브라우저 권한 확인)",
+    metaLine: (start, target) => `시작일 ${start} · 조회일 ${target}`,
+    badgeLine: (no, total) => `암송 ${no} / ${total}`,
+    statusLine: (isToday, no, diff) => `${isToday ? "오늘 " : ""}암송 ${no} (${diff}일째)`,
+    copyFormat: (ref, title, verse, exp) =>
+      `${ref} (${title})\n\n[암송구절]\n${verse}\n\n[해설]\n${exp}`,
+    copyFormatVerse: (ref, title, verse) =>
+      `${ref} (${title})\n\n[암송구절]\n${verse}`,
+    copyFormatExplain: (ref, title, exp) =>
+      `${ref} (${title})\n\n[해설]\n${exp}`,
+  },
+  ja: {
+    headerTitle: "今日の聖書暗唱【大阪オンヌリキリスト教会】",
+    headerSub: "ページを開くと、自動的に本日の暗唱が表示されます。",
+    startLabel: "開始日（暗唱1）",
+    targetLabel: "表示日",
+    todayBtn: "今日",
+    showBtn: "表示",
+    prevBtn: "前へ",
+    nextBtn: "次へ",
+    badgeErr: "エラー",
+    loadFailTitle: "暗唱データを読み込めませんでした",
+    loadFailMeta: "verses-j.json の確認が必要です",
+    loadFailHelp:
+`• 同じフォルダに verses-j.json があるか
+• ファイルが正しい JSON か（カンマ/括弧のミスなど）
+• file:// で直接開くと fetch がブロックされる場合があります。サーバー/ホスティング上で開いてください`,
+    noData: "暗唱データがありません。",
+    outOfRange: "範囲外の日付です。",
+    sectionVerse: "【暗唱聖句】",
+    sectionExplain: "【解説】",
+    copyAll: "全部コピー",
+    copyVerse: "聖句コピー",
+    copyExplain: "解説コピー",
+    copiedAll: "聖句＋解説をコピーしました。",
+    copiedVerse: "聖句をコピーしました。",
+    copiedExplain: "解説をコピーしました。",
+    copyFail: "コピーに失敗しました。（権限をご確認ください）",
+    metaLine: (start, target) => `開始日 ${start} ・ 表示日 ${target}`,
+    badgeLine: (no, total) => `暗唱聖句 ${no} / ${total}`,
+    statusLine: (isToday, no, diff) => `${isToday ? "本日 " : ""}暗唱 ${no}（${diff}日目）`,
+    copyFormat: (ref, title, verse, exp) =>
+      `${ref} (${title})\n\n【暗唱聖句】\n${verse}\n\n【解説】\n${exp}`,
+    copyFormatVerse: (ref, title, verse) =>
+      `${ref} (${title})\n\n【暗唱聖句】\n${verse}`,
+    copyFormatExplain: (ref, title, exp) =>
+      `${ref} (${title})\n\n【解説】\n${exp}`,
+  }
+};
+
+let LANG = "ko";
+function detectDefaultLang(){
+  const saved = localStorage.getItem(STORAGE_LANG);
+  if(saved === "ko" || saved === "ja") return saved;
+
+  const nav = (navigator.language || "").toLowerCase();
+  // 일본 브라우저면 ja 우선
+  if(nav.startsWith("ja")) return "ja";
+  return "ko";
+}
+
+function applyLang(lang){
+  LANG = (lang === "ja") ? "ja" : "ko";
+  localStorage.setItem(STORAGE_LANG, LANG);
+
+  const t = I18N[LANG];
+
+  document.documentElement.lang = LANG;
+  hdrTitle.textContent = t.headerTitle;
+  hdrSub.textContent = t.headerSub;
+
+  lblStart.textContent = t.startLabel;
+  lblTarget.textContent = t.targetLabel;
+
+  btnToday.textContent = t.todayBtn;
+  btnShow.textContent = t.showBtn;
+  btnPrev.textContent = t.prevBtn;
+  btnNext.textContent = t.nextBtn;
+
+  btnKo.classList.toggle("active", LANG === "ko");
+  btnJa.classList.toggle("active", LANG === "ja");
+
+  render();
+}
+
+// ===== JSON 로드
 async function loadVerses(){
   try{
     const res = await fetch("./verses.json", { cache: "no-store" });
@@ -253,22 +399,18 @@ async function loadVerses(){
       throw new Error("verses.json 형식이 올바르지 않거나 비어 있습니다.");
     }
 
-    // no 기준 정렬(혹시 순서가 뒤섞여도 안전)
     data.sort((a,b)=>(a.no??0)-(b.no??0));
     VERSES = data;
   }catch(e){
+    const t = I18N[LANG];
     resultArea.innerHTML = `
-      <div class="badge">오류</div>
-      <div class="title">암송 데이터를 불러오지 못했습니다</div>
-      <div class="meta">verses.json 확인 필요</div>
-      <div class="explainBox" style="margin-top:12px;">
-        ${String(e)}
-        <br/><br/>
-        • 같은 폴더에 <b>verses.json</b>이 있는지<br/>
-        • 파일이 valid JSON인지<br/>
-        • 로컬 파일로 직접 열면(fetch) 차단될 수 있으니 서버/호스팅에서 열었는지 확인해 주세요
-      </div>
+      <div class="badge">${t.badgeErr}</div>
+      <div class="title">${t.loadFailTitle}</div>
+      <div class="meta">${t.loadFailMeta}</div>
+      <div class="explainBox" style="margin-top:12px;"></div>
     `;
+    const box = resultArea.querySelector(".explainBox");
+    box.textContent = String(e) + "\n\n" + t.loadFailHelp;
     statusBox.textContent = "";
     throw e;
   }
@@ -310,80 +452,92 @@ function render(){
 
   localStorage.setItem(STORAGE_START,start);
 
+  const t = I18N[LANG];
+
   if(!VERSES.length){
-    resultArea.innerHTML="암송 데이터가 없습니다.";
+    resultArea.textContent = t.noData;
     return;
   }
 
   const diff=toUtcDayNumber(target)-toUtcDayNumber(start);
   const no=diff+1;
-
-  // ✅ 총 개수는 JSON 기준
   const total = VERSES.length;
 
   if(no<1||no>total){
-    resultArea.innerHTML="범위를 벗어난 날짜입니다.";
+    resultArea.textContent = t.outOfRange;
     statusBox.textContent="";
     return;
   }
 
   const v=VERSES[no-1];
+  const ref = v.ref ?? "";
+  const title = v.title ?? "";
+  const verse = v.verse ?? "";
+  const exp = v.explanation ?? "";
 
-  // ✅ 복사용 텍스트 미리 구성
-  const verseToCopy   = `${v.ref} (${v.title})\n\n[암송]\n${v.verse}`;
-  const explainToCopy = `${v.ref} (${v.title})\n\n[해설]\n${v.explanation}`;
-  const allToCopy     = `${v.ref} (${v.title})\n\n[암송]\n${v.verse}\n\n[해설]\n${v.explanation}`;
+  // 복사용 텍스트
+  const verseToCopy   = t.copyFormatVerse(ref, title, verse);
+  const explainToCopy = t.copyFormatExplain(ref, title, exp);
+  const allToCopy     = t.copyFormat(ref, title, verse, exp);
 
+  // 골격만 innerHTML / 본문은 textContent로 안전 주입
   resultArea.innerHTML=`
-    <div class="badge">암송 ${v.no} / ${total}</div>
-    <div class="title">${v.ref} (${v.title})</div>
-    <div class="meta">시작일 ${start} · 조회일 ${target}</div>
+    <div class="badge">${t.badgeLine(v.no, total)}</div>
+    <div class="title" id="titleText"></div>
+    <div class="meta">${t.metaLine(start, target)}</div>
 
     <div class="sectionTitleRow">
-      <div class="sectionTitle">[암송]</div>
+      <div class="sectionTitle">${t.sectionVerse}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-        <button class="miniBtn" id="btnCopyAll" type="button">전체 복사</button>
-        <button class="miniBtn" id="btnCopyVerse" type="button">암송 복사</button>
+        <button class="miniBtn" id="btnCopyAll" type="button">${t.copyAll}</button>
+        <button class="miniBtn" id="btnCopyVerse" type="button">${t.copyVerse}</button>
       </div>
     </div>
-    <div class="verseBox" id="verseText">${v.verse}</div>
+    <div class="verseBox" id="verseText"></div>
 
     <div class="sectionTitleRow">
-      <div class="sectionTitle">[해설]</div>
-      <button class="miniBtn" id="btnCopyExplain" type="button">해설 복사</button>
+      <div class="sectionTitle">${t.sectionExplain}</div>
+      <button class="miniBtn" id="btnCopyExplain" type="button">${t.copyExplain}</button>
     </div>
-    <div class="explainBox" id="explainText">${v.explanation}</div>
+    <div class="explainBox" id="explainText"></div>
   `;
 
-  // ✅ 복사 버튼 이벤트 바인딩
+  document.getElementById("titleText").textContent = `${ref} (${title})`;
+  document.getElementById("verseText").textContent = verse;
+  document.getElementById("explainText").textContent = exp;
+
   document.getElementById("btnCopyAll").onclick = async () => {
     const ok = await copyText(allToCopy);
-    flashStatus(ok ? "암송+해설이 복사되었습니다." : "복사에 실패했습니다. (브라우저 권한 확인)");
+    flashStatus(ok ? t.copiedAll : t.copyFail);
   };
   document.getElementById("btnCopyVerse").onclick = async () => {
     const ok = await copyText(verseToCopy);
-    flashStatus(ok ? "암송이 복사되었습니다." : "복사에 실패했습니다. (브라우저 권한 확인)");
+    flashStatus(ok ? t.copiedVerse : t.copyFail);
   };
   document.getElementById("btnCopyExplain").onclick = async () => {
     const ok = await copyText(explainToCopy);
-    flashStatus(ok ? "해설이 복사되었습니다." : "복사에 실패했습니다. (브라우저 권한 확인)");
+    flashStatus(ok ? t.copiedExplain : t.copyFail);
   };
 
-  statusBox.textContent = `${target===todayISO() ? "오늘 " : ""}암송 ${v.no} (${diff}일째)`;
+  statusBox.textContent = t.statusLine(target===todayISO(), v.no, diff);
 }
 
-document.getElementById("btnToday").onclick=()=>{
+// 버튼 바인딩
+btnKo.onclick = () => applyLang("ko");
+btnJa.onclick = () => applyLang("ja");
+
+btnToday.onclick=()=>{
   targetInput.value=todayISO();
   render();
 };
-document.getElementById("btnShow").onclick=render;
+btnShow.onclick=render;
 
-document.getElementById("btnPrev").onclick=()=>{
+btnPrev.onclick=()=>{
   if(!targetInput.value) targetInput.value = todayISO();
   targetInput.value = addDaysISO(targetInput.value, -1);
   render();
 };
-document.getElementById("btnNext").onclick=()=>{
+btnNext.onclick=()=>{
   if(!targetInput.value) targetInput.value = todayISO();
   targetInput.value = addDaysISO(targetInput.value, +1);
   render();
@@ -393,14 +547,14 @@ startInput.onchange=render;
 targetInput.onchange=render;
 
 async function init(){
-  await loadVerses(); // ✅ 먼저 데이터 로드
-  startInput.value=localStorage.getItem(STORAGE_START)||DEFAULT_START;
-  targetInput.value=todayISO();
+  LANG = detectDefaultLang();
+  applyLang(LANG); // UI 먼저 적용
+  await loadVerses(); // 데이터 로드
+  startInput.value = localStorage.getItem(STORAGE_START) || DEFAULT_START;
+  targetInput.value = todayISO();
   render();
 }
 init();
 </script>
 </body>
 </html>
-
-
