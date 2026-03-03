@@ -236,14 +236,14 @@ h1{
 .controls{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:14px;
+  gap:12px;
 }
 @media(max-width:520px){
   .controls{grid-template-columns:1fr;}
 }
 
 label{
-  font-size:12px;
+  font-size:14px;
   color:rgba(238,242,255,.74);
   display:block;
   margin-bottom:6px;
@@ -477,8 +477,8 @@ const I18N = {
 • 로컬 파일(file://)로 직접 열면(fetch) 차단될 수 있으니 서버/호스팅에서 열었는지 확인해 주세요`,
     noData: "암송 데이터가 없습니다.",
     outOfRange: "범위를 벗어난 날짜입니다.",
-    sectionVerse: "[암송구절]",
-    sectionExplain: "[해설]",
+    sectionVerse: "[ 암송구절 ]",
+    sectionExplain: "[ 해설 ]",
     copyAll: "전체 복사",
     copyVerse: "암송 복사",
     copyExplain: "해설 복사",
@@ -514,8 +514,8 @@ const I18N = {
 • file:// で直接開くと fetch がブロックされる場合があります。サーバー/ホスティング上で開いてください`,
     noData: "暗唱データがありません。",
     outOfRange: "範囲外の日付です。",
-    sectionVerse: "【暗唱聖句】",
-    sectionExplain: "【解説】",
+    sectionVerse: "【 暗唱聖句 】",
+    sectionExplain: "【 解説 】",
     copyAll: "全部コピー",
     copyVerse: "聖句コピー",
     copyExplain: "解説コピー",
@@ -761,6 +761,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
