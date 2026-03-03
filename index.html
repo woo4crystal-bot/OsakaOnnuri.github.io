@@ -385,18 +385,23 @@ function applyLang(lang){
   btnKo.classList.toggle("active", LANG === "ko");
   btnJa.classList.toggle("active", LANG === "ja");
 
-  render();
+    // 언어 변경 시 해당 언어 JSON 다시 로드
+  loadVerses()
+    .then(render)
+    .catch(()=>{ /* 에러 UI는 loadVerses에서 처리 */ });
 }
 
-// ===== JSON 로드
+// ===== JSON 로드 (언어별 파일)
 async function loadVerses(){
+  const file = (LANG === "ja") ? "./verses-j.json" : "./verses.json";
+
   try{
-    const res = await fetch("./verses.json", { cache: "no-store" });
+    const res = await fetch(file, { cache: "no-store" });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
     if(!Array.isArray(data) || data.length === 0){
-      throw new Error("verses.json 형식이 올바르지 않거나 비어 있습니다.");
+      throw new Error(`${file} 형식이 올바르지 않거나 비어 있습니다.`);
     }
 
     data.sort((a,b)=>(a.no??0)-(b.no??0));
@@ -548,13 +553,30 @@ targetInput.onchange=render;
 
 async function init(){
   LANG = detectDefaultLang();
-  applyLang(LANG); // UI 먼저 적용
-  await loadVerses(); // 데이터 로드
+  localStorage.setItem(STORAGE_LANG, LANG);
+
+  // UI 먼저 적용 (render는 아직 하지 않게끔 applyLang 안에서 loadVerses가 처리)
+  const t = I18N[LANG];
+  document.documentElement.lang = LANG;
+  hdrTitle.textContent = t.headerTitle;
+  hdrSub.textContent = t.headerSub;
+  lblStart.textContent = t.startLabel;
+  lblTarget.textContent = t.targetLabel;
+  btnToday.textContent = t.todayBtn;
+  btnShow.textContent = t.showBtn;
+  btnPrev.textContent = t.prevBtn;
+  btnNext.textContent = t.nextBtn;
+  btnKo.classList.toggle("active", LANG === "ko");
+  btnJa.classList.toggle("active", LANG === "ja");
+
   startInput.value = localStorage.getItem(STORAGE_START) || DEFAULT_START;
   targetInput.value = todayISO();
+
+  await loadVerses();
   render();
 }
 init();
 </script>
 </body>
 </html>
+
