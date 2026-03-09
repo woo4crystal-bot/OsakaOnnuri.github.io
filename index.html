@@ -8,28 +8,18 @@
 
 <style>
 :root{
-  /* Base */
   --bg-1:#0b1020;
   --bg-2:#0a1630;
-  --paper:rgba(255,255,255,.10);
-  --paper2:rgba(255,255,255,.06);
-
-  /* Text */
   --text:#eef2ff;
   --muted:rgba(238,242,255,.72);
-
-  /* Accents (lux) */
-  --accent:#7c3aed;         /* purple */
-  --accent2:#06b6d4;        /* cyan */
-  --gold:#f6c453;           /* warm gold */
-  --danger:#fb7185;
-
+  --accent:#7c3aed;
+  --accent2:#06b6d4;
+  --gold:#f6c453;
   --border:rgba(255,255,255,.14);
   --radius:22px;
   --shadow:0 18px 40px rgba(0,0,0,.35);
   --shadow2:0 10px 26px rgba(0,0,0,.24);
-
-  --glass: blur(12px);
+  --glass:blur(12px);
 }
 
 *{box-sizing:border-box;}
@@ -39,8 +29,6 @@ body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Noto Sans JP",system-ui,sans-serif;
   color:var(--text);
-
-  /* Premium aurora background */
   background:
     radial-gradient(900px 520px at 15% 0%, rgba(124,58,237,.45), transparent 60%),
     radial-gradient(900px 520px at 90% 10%, rgba(6,182,212,.35), transparent 55%),
@@ -60,7 +48,6 @@ body{
   gap:14px;
 }
 
-/* ===== Header */
 header{
   padding:26px 18px 14px 18px;
   border-bottom:1px solid rgba(255,255,255,.10);
@@ -80,8 +67,6 @@ h1{
   font-size:19px;
   font-weight:950;
   letter-spacing:-.2px;
-
-  /* gradient text */
   background:linear-gradient(90deg, #ffffff, rgba(255,255,255,.92), rgba(6,182,212,.92));
   -webkit-background-clip:text;
   background-clip:text;
@@ -95,7 +80,6 @@ h1{
   line-height:1.5;
 }
 
-/* ===== Cards (glass) */
 .card{
   background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
   border:1px solid rgba(255,255,255,.14);
@@ -115,9 +99,12 @@ h1{
   filter:blur(18px);
   z-index:0;
 }
-.cardPad{padding:18px; position:relative; z-index:1;}
+.cardPad{
+  padding:18px;
+  position:relative;
+  z-index:1;
+}
 
-/* ===== Badge */
 .badge{
   display:inline-flex;
   align-items:center;
@@ -132,7 +119,6 @@ h1{
   box-shadow:var(--shadow2);
 }
 
-/* ===== Titles */
 .title{
   margin-top:12px;
   font-size:19px;
@@ -149,7 +135,6 @@ h1{
   margin-top:6px;
 }
 
-/* ===== Section Titles */
 .sectionTitleRow{
   margin-top:18px;
   display:flex;
@@ -179,19 +164,16 @@ h1{
   box-shadow:0 0 0 4px rgba(246,196,83,.10);
 }
 
-/* ===== Verse box (hero) */
 .verseBox{
   margin-top:10px;
-  padding:18px 18px;
+  padding:18px;
   border-radius:18px;
-
   background:
     radial-gradient(450px 220px at 20% 0%, rgba(124,58,237,.20), transparent 60%),
     radial-gradient(450px 220px at 80% 10%, rgba(6,182,212,.18), transparent 58%),
     linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
   border:1px solid rgba(255,255,255,.16);
   box-shadow:0 18px 40px rgba(0,0,0,.26);
-
   font-size:19px;
   font-weight:900;
   line-height:1.85;
@@ -199,22 +181,10 @@ h1{
   text-shadow:0 1px 2px rgba(0,0,0,.55);
   white-space:pre-wrap;
   word-break:break-word;
-  position:relative;
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
 }
-/*.verseBox::before{
-  content:"❝";
-  position:absolute;
-  left:14px;
-  top:8px;
-  font-size:22px;
-  font-weight:950;
-  color:rgba(246,196,83,.55);
-  text-shadow:0 8px 28px rgba(246,196,83,.25);
-}*/
 
-/* ===== Explain box */
 .explainBox{
   margin-top:10px;
   padding:16px 18px;
@@ -232,7 +202,6 @@ h1{
   -webkit-backdrop-filter:blur(10px);
 }
 
-/* ===== Controls */
 .controls{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -252,7 +221,7 @@ label{
 
 input[type="date"]{
   width:100%;
-  padding:12px 12px;
+  padding:12px;
   border-radius:16px;
   border:1px solid rgba(255,255,255,.18);
   font-size:16px;
@@ -268,7 +237,6 @@ input[type="date"]:focus{
 }
 input[type="date"]:active{transform:translateY(1px);}
 
-/* ===== Buttons */
 button{
   padding:12px 14px;
   border-radius:16px;
@@ -304,7 +272,6 @@ button.secondary{
   flex-wrap:wrap;
 }
 
-/* Mini buttons */
 .miniBtn{
   padding:8px 10px;
   border-radius:14px;
@@ -319,15 +286,27 @@ button.secondary{
 .miniBtn:hover{filter:brightness(1.05);}
 .miniBtn:active{transform:translateY(1px);}
 
-/* Status */
+.topBar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.topNav{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
 .status{
   margin-top:12px;
   font-size:12.8px;
   color:rgba(238,242,255,.76);
   line-height:1.55;
+  min-height:1.55em;
 }
 
-/* Language toggle (pill tabs) */
 .langRow{
   display:flex;
   justify-content:flex-end;
@@ -350,14 +329,12 @@ button.secondary{
   color:rgba(246,196,83,.92);
 }
 
-/* Optional: disabled buttons */
 button:disabled{
   opacity:.45;
   cursor:not-allowed;
   filter:saturate(.8);
 }
 </style>
-
 </head>
 
 <body>
@@ -365,7 +342,7 @@ button:disabled{
   <div class="wrap">
 
     <header>
-      <h1 id="hdrTitle">오늘의 성경암송 | 今日の暗唱聖句</h1>
+      <h1 id="hdrTitle">오늘의 성경암송【오사카온누리교회】</h1>
       <div class="sub" id="hdrSub">페이지를 열면 자동으로 오늘 암송이 표시됩니다.</div>
     </header>
 
@@ -394,8 +371,7 @@ button:disabled{
 
         <div class="btnRow">
           <div class="btnGroup">
-            <button id="btnToday" class="secondary" type="button">오늘로</button>
-            <button id="btnShow" type="button">조회</button>
+            <button id="btnToday" class="secondary" type="button">오늘</button>
           </div>
           <div class="btnGroup">
             <button id="btnPrev" class="secondary" type="button">이전</button>
@@ -412,60 +388,38 @@ button:disabled{
 </div>
 
 <script>
-let VERSES = []; // JSON에서 로드
+let VERSES = [];
+let LANG = "ko";
+let loadSeq = 0;
+let flashTimer = null;
 
-// ===== 날짜 유틸 (Safari 안정화)
-function toUtcDayNumber(str){
-  const [y,m,d]=str.split("-").map(Number);
-  return Math.floor(Date.UTC(y,m-1,d)/86400000);
-}
-function todayISO(){
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-function addDaysISO(str, delta){
-  const [y,m,d] = str.split("-").map(Number);
-  const ms = Date.UTC(y, m-1, d) + delta * 86400000;
-  const nd = new Date(ms);
-  const yy = nd.getUTCFullYear();
-  const mm = String(nd.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(nd.getUTCDate()).padStart(2, "0");
-  return `${yy}-${mm}-${dd}`;
-}
+const DEFAULT_START = "2026-02-08";
+const STORAGE_START = "memorization_start_v4";
+const STORAGE_LANG = "memorization_lang_v1";
 
-const DEFAULT_START="2026-02-08";
-const STORAGE_START="memorization_start_v4";
-const STORAGE_LANG="memorization_lang_v1";
+const startInput = document.getElementById("startDate");
+const targetInput = document.getElementById("targetDate");
+const resultArea = document.getElementById("resultArea");
+const statusBox = document.getElementById("statusBox");
 
-const startInput=document.getElementById("startDate");
-const targetInput=document.getElementById("targetDate");
-const resultArea=document.getElementById("resultArea");
-const statusBox=document.getElementById("statusBox");
+const btnKo = document.getElementById("btnKo");
+const btnJa = document.getElementById("btnJa");
 
-const btnKo=document.getElementById("btnKo");
-const btnJa=document.getElementById("btnJa");
+const hdrTitle = document.getElementById("hdrTitle");
+const hdrSub = document.getElementById("hdrSub");
+const lblStart = document.getElementById("lblStart");
+const lblTarget = document.getElementById("lblTarget");
+const btnToday = document.getElementById("btnToday");
+const btnPrev = document.getElementById("btnPrev");
+const btnNext = document.getElementById("btnNext");
 
-const hdrTitle=document.getElementById("hdrTitle");
-const hdrSub=document.getElementById("hdrSub");
-const lblStart=document.getElementById("lblStart");
-const lblTarget=document.getElementById("lblTarget");
-const btnToday=document.getElementById("btnToday");
-const btnShow=document.getElementById("btnShow");
-const btnPrev=document.getElementById("btnPrev");
-const btnNext=document.getElementById("btnNext");
-
-// ===== i18n
 const I18N = {
   ko: {
     headerTitle: "오늘의 성경암송【오사카온누리교회】",
     headerSub: "페이지를 열면 자동으로 오늘 암송이 표시됩니다.",
     startLabel: "시작일 (암송1)",
     targetLabel: "조회 날짜",
-    todayBtn: "오늘로",
-    showBtn: "조회",
+    todayBtn: "오늘",
     prevBtn: "이전",
     nextBtn: "다음",
     badgeErr: "오류",
@@ -473,8 +427,8 @@ const I18N = {
     loadFailMeta: "verses.json 확인 필요",
     loadFailHelp:
 `• 같은 폴더에 verses.json이 있는지
-• 파일이 valid JSON인지
-• 로컬 파일(file://)로 직접 열면(fetch) 차단될 수 있으니 서버/호스팅에서 열었는지 확인해 주세요`,
+• 파일이 올바른 JSON인지
+• file:// 로 직접 열면 fetch가 차단될 수 있으니 서버/호스팅에서 열어 주세요`,
     noData: "암송 데이터가 없습니다.",
     outOfRange: "범위를 벗어난 날짜입니다.",
     sectionVerse: "[ 암송구절 ]",
@@ -502,7 +456,6 @@ const I18N = {
     startLabel: "開始日（暗唱1）",
     targetLabel: "表示日",
     todayBtn: "今日",
-    showBtn: "表示",
     prevBtn: "前へ",
     nextBtn: "次へ",
     badgeErr: "エラー",
@@ -510,8 +463,8 @@ const I18N = {
     loadFailMeta: "verses-j.json の確認が必要です",
     loadFailHelp:
 `• 同じフォルダに verses-j.json があるか
-• ファイルが正しい JSON か（カンマ/括弧のミスなど）
-• file:// で直接開くと fetch がブロックされる場合があります。サーバー/ホスティング上で開いてください`,
+• ファイルが正しい JSON か
+• file:// で直接開くと fetch がブロックされる場合があります。サーバー上で開いてください`,
     noData: "暗唱データがありません。",
     outOfRange: "範囲外の日付です。",
     sectionVerse: "【 暗唱聖句 】",
@@ -535,60 +488,72 @@ const I18N = {
   }
 };
 
-let LANG = "ko";
+function toUtcDayNumber(str){
+  const [y, m, d] = str.split("-").map(Number);
+  return Math.floor(Date.UTC(y, m - 1, d) / 86400000);
+}
+
+function todayISO(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function addDaysISO(str, delta){
+  const [y, m, d] = str.split("-").map(Number);
+  const ms = Date.UTC(y, m - 1, d) + delta * 86400000;
+  const nd = new Date(ms);
+  const yy = nd.getUTCFullYear();
+  const mm = String(nd.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(nd.getUTCDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
+
 function detectDefaultLang(){
   const saved = localStorage.getItem(STORAGE_LANG);
   if(saved === "ko" || saved === "ja") return saved;
 
   const nav = (navigator.language || "").toLowerCase();
-  // 일본 브라우저면 ja 우선
-  if(nav.startsWith("ja")) return "ja";
-  return "ko";
+  return nav.startsWith("ja") ? "ja" : "ko";
 }
 
-function applyLang(lang){
-  LANG = (lang === "ja") ? "ja" : "ko";
-  localStorage.setItem(STORAGE_LANG, LANG);
-
+function setUIText(){
   const t = I18N[LANG];
-
   document.documentElement.lang = LANG;
   hdrTitle.textContent = t.headerTitle;
   hdrSub.textContent = t.headerSub;
-
   lblStart.textContent = t.startLabel;
   lblTarget.textContent = t.targetLabel;
-
   btnToday.textContent = t.todayBtn;
-  btnShow.textContent = t.showBtn;
   btnPrev.textContent = t.prevBtn;
   btnNext.textContent = t.nextBtn;
-
   btnKo.classList.toggle("active", LANG === "ko");
   btnJa.classList.toggle("active", LANG === "ja");
-
-    // 언어 변경 시 해당 언어 JSON 다시 로드
-  loadVerses()
-    .then(render)
-    .catch(()=>{ /* 에러 UI는 loadVerses에서 처리 */ });
 }
 
-// ===== JSON 로드 (언어별 파일)
 async function loadVerses(){
-  const file = (LANG === "ja") ? "./verses-j.json" : "./verses.json";
+  const seq = ++loadSeq;
+  const file = LANG === "ja" ? "./verses-j.json" : "./verses.json";
 
   try{
     const res = await fetch(file, { cache: "no-store" });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
+
     const data = await res.json();
+    if(seq !== loadSeq) return false;
 
     if(!Array.isArray(data) || data.length === 0){
       throw new Error(`${file} 형식이 올바르지 않거나 비어 있습니다.`);
     }
 
-    data.sort((a,b)=>(a.no??0)-(b.no??0));
+    data.sort((a, b) => (a.no ?? 0) - (b.no ?? 0));
     VERSES = data;
+    return true;
   }catch(e){
+    if(seq !== loadSeq) return false;
+
     const t = I18N[LANG];
     resultArea.innerHTML = `
       <div class="badge">${t.badgeErr}</div>
@@ -596,14 +561,47 @@ async function loadVerses(){
       <div class="meta">${t.loadFailMeta}</div>
       <div class="explainBox" style="margin-top:12px;"></div>
     `;
-    const box = resultArea.querySelector(".explainBox");
-    box.textContent = String(e) + "\n\n" + t.loadFailHelp;
+    resultArea.querySelector(".explainBox").textContent =
+      String(e) + "\n\n" + t.loadFailHelp;
+
+    statusBox.dataset.baseStatus = "";
     statusBox.textContent = "";
-    throw e;
+    updateBottomNavDisabled(true, true);
+    return false;
   }
 }
 
-// 복사 기능
+async function applyLang(lang){
+  LANG = lang === "ja" ? "ja" : "ko";
+  localStorage.setItem(STORAGE_LANG, LANG);
+  setUIText();
+
+  const ok = await loadVerses();
+  if(ok) render();
+}
+
+function updateBottomNavDisabled(prevDisabled, nextDisabled){
+  btnPrev.disabled = prevDisabled;
+  btnNext.disabled = nextDisabled;
+}
+
+function setTopNavDisabled(no, total){
+  const btnPrevTop = document.getElementById("btnPrevTop");
+  const btnNextTop = document.getElementById("btnNextTop");
+  if(btnPrevTop) btnPrevTop.disabled = no <= 1;
+  if(btnNextTop) btnNextTop.disabled = no >= total;
+}
+
+function flashStatus(msg){
+  const base = statusBox.dataset.baseStatus || "";
+  statusBox.textContent = msg;
+
+  if(flashTimer) clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => {
+    statusBox.textContent = base;
+  }, 2000);
+}
+
 async function copyText(text){
   try{
     if(navigator.clipboard && navigator.clipboard.writeText){
@@ -611,15 +609,16 @@ async function copyText(text){
       return true;
     }
   }catch(e){}
+
   try{
-    const ta=document.createElement("textarea");
-    ta.value=text;
-    ta.style.position="fixed";
-    ta.style.opacity="0";
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
     document.body.appendChild(ta);
     ta.focus();
     ta.select();
-    const ok=document.execCommand("copy");
+    const ok = document.execCommand("copy");
     document.body.removeChild(ta);
     return ok;
   }catch(e){
@@ -627,44 +626,42 @@ async function copyText(text){
   }
 }
 
-function flashStatus(msg){
-  statusBox.textContent = msg;
-  setTimeout(()=>{ if(statusBox.textContent === msg) statusBox.textContent=""; }, 2000);
+function moveDay(delta){
+  if(!targetInput.value) targetInput.value = todayISO();
+  targetInput.value = addDaysISO(targetInput.value, delta);
+  render();
 }
 
-function updateNavButtons(no, total){
-  btnPrev.disabled = no <= 1;
-  btnNext.disabled = no >= total;
-}
-  
 function render(){
-  const start=startInput.value;
-  const target=targetInput.value;
+  const start = startInput.value;
+  const target = targetInput.value;
+  const t = I18N[LANG];
+
   if(!start || !target) return;
 
-  localStorage.setItem(STORAGE_START,start);
-
-  const t = I18N[LANG];
+  localStorage.setItem(STORAGE_START, start);
 
   if(!VERSES.length){
     resultArea.textContent = t.noData;
-    btnPrev.disabled = true;
-    btnNext.disabled = true;
+    statusBox.dataset.baseStatus = "";
+    statusBox.textContent = "";
+    updateBottomNavDisabled(true, true);
     return;
   }
 
-  const diff=toUtcDayNumber(target)-toUtcDayNumber(start);
+  const diff = toUtcDayNumber(target) - toUtcDayNumber(start);
   const no = diff + 1;
   const total = VERSES.length;
 
-  if(no<1||no>total){
+  if(no < 1 || no > total){
     resultArea.textContent = t.outOfRange;
+    statusBox.dataset.baseStatus = "";
     statusBox.textContent = "";
-    updateNavButtons(no, total);
+    updateBottomNavDisabled(no <= 1, no >= total);
     return;
   }
 
-  updateNavButtons(no, total);
+  updateBottomNavDisabled(no <= 1, no >= total);
 
   const v = VERSES[no - 1];
   const ref = v.ref ?? "";
@@ -672,14 +669,19 @@ function render(){
   const verse = v.verse ?? "";
   const exp = v.explanation ?? "";
 
-  // 복사용 텍스트
-  const verseToCopy   = t.copyFormatVerse(ref, title, verse);
+  const verseToCopy = t.copyFormatVerse(ref, title, verse);
   const explainToCopy = t.copyFormatExplain(ref, title, exp);
-  const allToCopy     = t.copyFormat(ref, title, verse, exp);
+  const allToCopy = t.copyFormat(ref, title, verse, exp);
 
-  // 골격만 innerHTML / 본문은 textContent로 안전 주입
-  resultArea.innerHTML=`
-    <div class="badge">${t.badgeLine(v.no, total)}</div>
+  resultArea.innerHTML = `
+    <div class="topBar">
+      <div class="badge">${t.badgeLine(v.no, total)}</div>
+      <div class="topNav">
+        <button class="miniBtn" id="btnPrevTop" type="button">${t.prevBtn}</button>
+        <button class="miniBtn" id="btnNextTop" type="button">${t.nextBtn}</button>
+      </div>
+    </div>
+
     <div class="title" id="titleText"></div>
     <div class="meta">${t.metaLine(start, target)}</div>
 
@@ -703,6 +705,9 @@ function render(){
   document.getElementById("verseText").textContent = verse;
   document.getElementById("explainText").textContent = exp;
 
+  document.getElementById("btnPrevTop").onclick = () => moveDay(-1);
+  document.getElementById("btnNextTop").onclick = () => moveDay(1);
+
   document.getElementById("btnCopyAll").onclick = async () => {
     const ok = await copyText(allToCopy);
     flashStatus(ok ? t.copiedAll : t.copyFail);
@@ -716,97 +721,35 @@ function render(){
     flashStatus(ok ? t.copiedExplain : t.copyFail);
   };
 
-  statusBox.textContent = t.statusLine(target===todayISO(), v.no, diff);
+  setTopNavDisabled(no, total);
+
+  const baseStatus = t.statusLine(target === todayISO(), v.no, diff);
+  statusBox.dataset.baseStatus = baseStatus;
+  statusBox.textContent = baseStatus;
 }
 
-// 버튼 바인딩
 btnKo.onclick = () => applyLang("ko");
 btnJa.onclick = () => applyLang("ja");
 
-btnToday.onclick=()=>{
-  targetInput.value=todayISO();
-  render();
-};
-btnShow.onclick=render;
-
-btnPrev.onclick=()=>{
-  if(!targetInput.value) targetInput.value = todayISO();
-  targetInput.value = addDaysISO(targetInput.value, -1);
-  render();
-};
-btnNext.onclick=()=>{
-  if(!targetInput.value) targetInput.value = todayISO();
-  targetInput.value = addDaysISO(targetInput.value, +1);
+btnToday.onclick = () => {
+  targetInput.value = todayISO();
   render();
 };
 
-startInput.onchange=render;
-targetInput.onchange=render;
+btnPrev.onclick = () => moveDay(-1);
+btnNext.onclick = () => moveDay(1);
+
+startInput.onchange = render;
+targetInput.onchange = render;
 
 async function init(){
   LANG = detectDefaultLang();
-
   startInput.value = localStorage.getItem(STORAGE_START) || DEFAULT_START;
   targetInput.value = todayISO();
-
   await applyLang(LANG);
 }
 
-async function applyLang(lang){
-  LANG = (lang === "ja") ? "ja" : "ko";
-  localStorage.setItem(STORAGE_LANG, LANG);
-
-  // UI 먼저 적용 (render는 아직 하지 않게끔 applyLang 안에서 loadVerses가 처리)
-  const t = I18N[LANG];
-  document.documentElement.lang = LANG;
-  hdrTitle.textContent = t.headerTitle;
-  hdrSub.textContent = t.headerSub;
-  lblStart.textContent = t.startLabel;
-  lblTarget.textContent = t.targetLabel;
-  btnToday.textContent = t.todayBtn;
-  btnShow.textContent = t.showBtn;
-  btnPrev.textContent = t.prevBtn;
-  btnNext.textContent = t.nextBtn;
-
-  btnKo.classList.toggle("active", LANG === "ko");
-  btnJa.classList.toggle("active", LANG === "ja");
-
-  await loadVerses();
-  render();
-}
-
-btnKo.onclick = () => applyLang("ko");
-btnJa.onclick = () => applyLang("ja");
-
 init();
-
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
