@@ -632,10 +632,15 @@ function flashStatus(msg){
   setTimeout(()=>{ if(statusBox.textContent === msg) statusBox.textContent=""; }, 2000);
 }
 
+function updateNavButtons(no, total){
+  btnPrev.disabled = no <= 1;
+  btnNext.disabled = no >= total;
+}
+  
 function render(){
   const start=startInput.value;
   const target=targetInput.value;
-  if(!start||!target) return;
+  if(!start || !target) return;
 
   localStorage.setItem(STORAGE_START,start);
 
@@ -643,20 +648,25 @@ function render(){
 
   if(!VERSES.length){
     resultArea.textContent = t.noData;
+    btnPrev.disabled = true;
+    btnNext.disabled = true;
     return;
   }
 
   const diff=toUtcDayNumber(target)-toUtcDayNumber(start);
-  const no=diff+1;
+  const no = diff + 1;
   const total = VERSES.length;
 
   if(no<1||no>total){
     resultArea.textContent = t.outOfRange;
-    statusBox.textContent="";
+    statusBox.textContent = "";
+    updateNavButtons(no, total);
     return;
   }
 
-  const v=VERSES[no-1];
+  updateNavButtons(no, total);
+
+  const v = VERSES[no - 1];
   const ref = v.ref ?? "";
   const title = v.title ?? "";
   const verse = v.verse ?? "";
@@ -773,6 +783,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
