@@ -735,6 +735,15 @@ targetInput.onchange=render;
 
 async function init(){
   LANG = detectDefaultLang();
+
+  startInput.value = localStorage.getItem(STORAGE_START) || DEFAULT_START;
+  targetInput.value = todayISO();
+
+  await applyLang(LANG);
+}
+
+async function applyLang(lang){
+  LANG = (lang === "ja") ? "ja" : "ko";
   localStorage.setItem(STORAGE_LANG, LANG);
 
   // UI 먼저 적용 (render는 아직 하지 않게끔 applyLang 안에서 loadVerses가 처리)
@@ -748,19 +757,23 @@ async function init(){
   btnShow.textContent = t.showBtn;
   btnPrev.textContent = t.prevBtn;
   btnNext.textContent = t.nextBtn;
+
   btnKo.classList.toggle("active", LANG === "ko");
   btnJa.classList.toggle("active", LANG === "ja");
-
-  startInput.value = localStorage.getItem(STORAGE_START) || DEFAULT_START;
-  targetInput.value = todayISO();
 
   await loadVerses();
   render();
 }
+
+btnKo.onclick = () => applyLang("ko");
+btnJa.onclick = () => applyLang("ja");
+
 init();
+
 </script>
 </body>
 </html>
+
 
 
 
