@@ -20,6 +20,7 @@
   --shadow:0 18px 40px rgba(0,0,0,.35);
   --shadow2:0 10px 26px rgba(0,0,0,.24);
   --glass:blur(12px);
+  --danger:#ef4444;
 }
 
 *{box-sizing:border-box;}
@@ -207,6 +208,10 @@ h1{
   grid-template-columns:1fr 1fr;
   gap:12px;
 }
+.controls.single{
+  grid-template-columns:1fr;
+}
+
 @media(max-width:520px){
   .controls{grid-template-columns:1fr;}
 }
@@ -219,7 +224,8 @@ label{
   font-weight:950;
 }
 
-input[type="date"]{
+input[type="date"],
+input[type="text"]{
   width:100%;
   padding:12px;
   border-radius:16px;
@@ -231,11 +237,18 @@ input[type="date"]{
   -webkit-appearance:none;
   transition:box-shadow .15s ease, border-color .15s ease, transform .06s ease;
 }
-input[type="date"]:focus{
+input[type="text"]::placeholder{
+  color:rgba(238,242,255,.42);
+}
+input[type="date"]:focus,
+input[type="text"]:focus{
   border-color:rgba(6,182,212,.45);
   box-shadow:0 0 0 4px rgba(6,182,212,.16);
 }
-input[type="date"]:active{transform:translateY(1px);}
+input[type="date"]:active,
+input[type="text"]:active{
+  transform:translateY(1px);
+}
 
 button{
   padding:12px 14px;
@@ -257,6 +270,11 @@ button.secondary{
   color:rgba(255,255,255,.92);
   border:1px solid rgba(255,255,255,.16);
   box-shadow:none;
+}
+
+button.danger{
+  background:linear-gradient(135deg, rgba(239,68,68,.95), rgba(185,28,28,.82));
+  color:#fff;
 }
 
 .btnRow{
@@ -334,6 +352,75 @@ button:disabled{
   cursor:not-allowed;
   filter:saturate(.8);
 }
+
+.recordWrap{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.recordHead{
+  margin-top:12px; /* 타이틀과 상태 영역 간격을 자연스럽게 증가 */
+}
+
+.recordInfo{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+
+.recordBadge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.16);
+  font-size:12px;
+  font-weight:900;
+  color:rgba(255,255,255,.86);
+}
+
+.recDot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:var(--danger);
+  box-shadow:0 0 0 0 rgba(239,68,68,.75);
+}
+
+.recording .recDot{
+  animation:recPulse 1.2s infinite;
+}
+
+@keyframes recPulse{
+  0%{ box-shadow:0 0 0 0 rgba(239,68,68,.75); opacity:1; }
+  70%{ box-shadow:0 0 0 10px rgba(239,68,68,0); opacity:.85; }
+  100%{ box-shadow:0 0 0 0 rgba(239,68,68,0); opacity:1; }
+}
+
+.timer{
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.4px;
+}
+
+.audioWrap{
+  margin-top:6px;
+}
+
+audio{
+  width:100%;
+  display:block;
+  border-radius:14px;
+}
+
+.recHint{
+  font-size:12px;
+  color:rgba(238,242,255,.66);
+  line-height:1.6;
+}
 </style>
 </head>
 
@@ -384,6 +471,54 @@ button:disabled{
       </div>
     </div>
 
+    <div class="card">
+      <div class="cardPad">
+        <div class="sectionTitleRow">
+          <div class="sectionTitle" id="recTitle">[ 내 암송 녹음 ]</div>
+        </div>
+
+        <div class="recordWrap" id="recordWrap">
+          <div class="recordHead">
+            <div class="recordInfo">
+              <div class="recordBadge" id="recStateBadge">
+                <span class="recDot"></span>
+                <span id="recStateText">대기 중</span>
+              </div>
+              <div class="recordBadge timer" id="recTimer">00:00</div>
+            </div>
+          </div>
+
+          <div class="controls single">
+            <div>
+              <label id="lblRecorderName">이름</label>
+              <input id="recorderName" type="text" maxlength="40" placeholder="예: 철수"/>
+            </div>
+          </div>
+
+          <div class="btnRow" style="margin-top:0;">
+            <div class="btnGroup">
+              <button id="btnRecStart" type="button">녹음 시작</button>
+              <button id="btnRecStop" class="secondary" type="button" disabled>녹음 종료</button>
+              <button id="btnRecReset" class="secondary" type="button" disabled>녹음 삭제</button>
+            </div>
+            <div class="btnGroup">
+              <button id="btnRecSave" class="secondary" type="button" disabled>파일 저장</button>
+            </div>
+          </div>
+
+          <div class="status" id="recStatus" aria-live="polite"></div>
+
+          <div class="audioWrap">
+            <audio id="recordedAudio" controls style="display:none;"></audio>
+          </div>
+
+          <div class="recHint" id="recHint">
+            iPhone / Safari 에서는 HTTPS 환경에서 여는 것이 가장 안정적입니다.
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -393,9 +528,18 @@ let LANG = "ko";
 let loadSeq = 0;
 let flashTimer = null;
 
+let mediaRecorder = null;
+let mediaStream = null;
+let recordChunks = [];
+let recordedBlob = null;
+let recordedMimeType = "";
+let recordTimerId = null;
+let recordStartedAt = 0;
+
 const DEFAULT_START = "2026-02-08";
 const STORAGE_START = "memorization_start_v4";
 const STORAGE_LANG = "memorization_lang_v1";
+const STORAGE_RECORDER_NAME = "memorization_recorder_name_v1";
 
 const startInput = document.getElementById("startDate");
 const targetInput = document.getElementById("targetDate");
@@ -412,6 +556,20 @@ const lblTarget = document.getElementById("lblTarget");
 const btnToday = document.getElementById("btnToday");
 const btnPrev = document.getElementById("btnPrev");
 const btnNext = document.getElementById("btnNext");
+
+const recTitle = document.getElementById("recTitle");
+const btnRecStart = document.getElementById("btnRecStart");
+const btnRecStop = document.getElementById("btnRecStop");
+const btnRecReset = document.getElementById("btnRecReset");
+const btnRecSave = document.getElementById("btnRecSave");
+const recStatus = document.getElementById("recStatus");
+const recordedAudio = document.getElementById("recordedAudio");
+const recHint = document.getElementById("recHint");
+const recTimer = document.getElementById("recTimer");
+const recordWrap = document.getElementById("recordWrap");
+const recStateText = document.getElementById("recStateText");
+const lblRecorderName = document.getElementById("lblRecorderName");
+const recorderNameInput = document.getElementById("recorderName");
 
 const I18N = {
   ko: {
@@ -442,13 +600,35 @@ const I18N = {
     copyFail: "복사에 실패했습니다. (브라우저 권한 확인)",
     metaLine: (start, target) => `시작일 ${start} · 조회일 ${target}`,
     badgeLine: (no, total) => `암송 ${no} / ${total}`,
-    statusLine: (isToday, no, diff) => `${isToday ? "오늘 " : ""}암송 ${no} (${diff}일째)`,
+    statusLine: (isToday, no, diff) => `${isToday ? "오늘 " : ""}암송 ${no} (${diff + 1}일째)`,
     copyFormat: (ref, title, verse, exp) =>
       `${ref} (${title})\n\n[암송구절]\n${verse}\n\n[해설]\n${exp}`,
     copyFormatVerse: (ref, title, verse) =>
       `${ref} (${title})\n\n[암송구절]\n${verse}`,
     copyFormatExplain: (ref, title, exp) =>
       `${ref} (${title})\n\n[해설]\n${exp}`,
+
+    recTitle: "[ 내 암송 녹음 ]",
+    recStart: "녹음 시작",
+    recStop: "녹음 종료",
+    recReset: "녹음 삭제",
+    recSave: "파일 저장",
+    recPreparing: "마이크 권한을 요청하는 중입니다...",
+    recRecording: "녹음 중입니다...",
+    recStopped: "녹음이 완료되었습니다.",
+    recSaved: "녹음 파일 저장창을 열었습니다.",
+    recNoData: "저장할 녹음 파일이 없습니다.",
+    recUnsupported: "이 브라우저는 녹음을 지원하지 않습니다.",
+    recPermissionDenied: "마이크 권한이 필요합니다.",
+    recHttpsHint: "아이폰/사파리에서는 HTTPS 환경에서 여는 것이 가장 안전합니다.",
+    recDeleted: "녹음이 삭제되었습니다.",
+    recIdle: "대기 중",
+    recRecordingState: "녹음 중",
+    recRecordedState: "녹음 완료",
+    recorderNameLabel: "이름",
+    recorderNamePlaceholder: "예: 철수",
+    recFileNameNoName: (no, ref, date, ext) => `암송${no}_${ref}_${date}.${ext}`,
+    recFileNameWithName: (no, ref, name, date, ext) => `암송${no}_${ref}_${name}_${date}.${ext}`,
   },
   ja: {
     headerTitle: "今日の暗唱聖句【大阪オンヌリ教会】",
@@ -478,13 +658,35 @@ const I18N = {
     copyFail: "コピーに失敗しました。（権限をご確認ください）",
     metaLine: (start, target) => `開始日 ${start} ・ 表示日 ${target}`,
     badgeLine: (no, total) => `暗唱聖句 ${no} / ${total}`,
-    statusLine: (isToday, no, diff) => `${isToday ? "本日 " : ""}暗唱 ${no}（${diff}日目）`,
+    statusLine: (isToday, no, diff) => `${isToday ? "本日 " : ""}暗唱 ${no}（${diff + 1}日目）`,
     copyFormat: (ref, title, verse, exp) =>
       `${ref} (${title})\n\n【暗唱聖句】\n${verse}\n\n【解説】\n${exp}`,
     copyFormatVerse: (ref, title, verse) =>
       `${ref} (${title})\n\n【暗唱聖句】\n${verse}`,
     copyFormatExplain: (ref, title, exp) =>
       `${ref} (${title})\n\n【解説】\n${exp}`,
+
+    recTitle: "【 自分の暗唱録音 】",
+    recStart: "録音開始",
+    recStop: "録音終了",
+    recReset: "録音削除",
+    recSave: "ファイル保存",
+    recPreparing: "マイク権限を確認しています...",
+    recRecording: "録音中です...",
+    recStopped: "録音が完了しました。",
+    recSaved: "録音ファイルの保存画面を開きました。",
+    recNoData: "保存する録音ファイルがありません。",
+    recUnsupported: "このブラウザは録音に対応していません。",
+    recPermissionDenied: "マイクの権限が必要です。",
+    recHttpsHint: "iPhone / Safari では HTTPS 環境で開くのが安全です。",
+    recDeleted: "録音を削除しました。",
+    recIdle: "待機中",
+    recRecordingState: "録音中",
+    recRecordedState: "録音完了",
+    recorderNameLabel: "名前",
+    recorderNamePlaceholder: "例: 太郎",
+    recFileNameNoName: (no, ref, date, ext) => `暗唱${no}_${ref}_${date}.${ext}`,
+    recFileNameWithName: (no, ref, name, date, ext) => `暗唱${no}_${ref}_${name}_${date}.${ext}`,
   }
 };
 
@@ -494,11 +696,17 @@ function toUtcDayNumber(str){
 }
 
 function todayISO(){
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+
+  const y = parts.find(p => p.type === "year").value;
+  const m = parts.find(p => p.type === "month").value;
+  const d = parts.find(p => p.type === "day").value;
+  return `${y}-${m}-${d}`;
 }
 
 function addDaysISO(str, delta){
@@ -519,6 +727,19 @@ function detectDefaultLang(){
   return nav.startsWith("ja") ? "ja" : "ko";
 }
 
+function sanitizeFilePart(text){
+  return String(text || "")
+    .trim()
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .replace(/\s+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function getRecorderName(){
+  return sanitizeFilePart(recorderNameInput.value);
+}
+
 function setUIText(){
   const t = I18N[LANG];
   document.documentElement.lang = LANG;
@@ -531,6 +752,23 @@ function setUIText(){
   btnNext.textContent = t.nextBtn;
   btnKo.classList.toggle("active", LANG === "ko");
   btnJa.classList.toggle("active", LANG === "ja");
+
+  recTitle.textContent = t.recTitle;
+  btnRecStart.textContent = t.recStart;
+  btnRecStop.textContent = t.recStop;
+  btnRecReset.textContent = t.recReset;
+  btnRecSave.textContent = t.recSave;
+  recHint.textContent = t.recHttpsHint;
+  lblRecorderName.textContent = t.recorderNameLabel;
+  recorderNameInput.placeholder = t.recorderNamePlaceholder;
+
+  if(mediaRecorder && mediaRecorder.state === "recording"){
+    recStateText.textContent = t.recRecordingState;
+  }else if(recordedBlob){
+    recStateText.textContent = t.recRecordedState;
+  }else{
+    recStateText.textContent = t.recIdle;
+  }
 }
 
 async function loadVerses(){
@@ -550,6 +788,7 @@ async function loadVerses(){
 
     data.sort((a, b) => (a.no ?? 0) - (b.no ?? 0));
     VERSES = data;
+    updateDateLimits();
     return true;
   }catch(e){
     if(seq !== loadSeq) return false;
@@ -632,6 +871,12 @@ function moveDay(delta){
   render();
 }
 
+function updateDateLimits(){
+  if(!startInput.value || !VERSES.length) return;
+  targetInput.min = startInput.value;
+  targetInput.max = addDaysISO(startInput.value, VERSES.length - 1);
+}
+
 function render(){
   const start = startInput.value;
   const target = targetInput.value;
@@ -640,6 +885,7 @@ function render(){
   if(!start || !target) return;
 
   localStorage.setItem(STORAGE_START, start);
+  updateDateLimits();
 
   if(!VERSES.length){
     resultArea.textContent = t.noData;
@@ -675,7 +921,7 @@ function render(){
 
   resultArea.innerHTML = `
     <div class="topBar">
-      <div class="badge">${t.badgeLine(v.no, total)}</div>
+      <div class="badge">${t.badgeLine(no, total)}</div>
       <div class="topNav">
         <button class="miniBtn" id="btnPrevTop" type="button">${t.prevBtn}</button>
         <button class="miniBtn" id="btnNextTop" type="button">${t.nextBtn}</button>
@@ -723,9 +969,264 @@ function render(){
 
   setTopNavDisabled(no, total);
 
-  const baseStatus = t.statusLine(target === todayISO(), v.no, diff);
+  const baseStatus = t.statusLine(target === todayISO(), no, diff);
   statusBox.dataset.baseStatus = baseStatus;
   statusBox.textContent = baseStatus;
+}
+
+function canRecord(){
+  return !!(
+    navigator.mediaDevices &&
+    navigator.mediaDevices.getUserMedia &&
+    window.MediaRecorder
+  );
+}
+
+function pickSupportedMimeType(){
+  const candidates = [
+    "audio/mp4",
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/ogg;codecs=opus",
+    "audio/ogg"
+  ];
+
+  for(const type of candidates){
+    try{
+      if(MediaRecorder.isTypeSupported(type)) return type;
+    }catch(e){}
+  }
+  return "";
+}
+
+function currentVerseInfo(){
+  const start = startInput.value;
+  const target = targetInput.value;
+
+  if(!start || !target || !VERSES.length) return null;
+
+  const diff = toUtcDayNumber(target) - toUtcDayNumber(start);
+  const no = diff + 1;
+  if(no < 1 || no > VERSES.length) return null;
+
+  const v = VERSES[no - 1];
+  return {
+    no,
+    ref: sanitizeFilePart(v.ref || "verse"),
+    title: v.title || "",
+    target
+  };
+}
+
+function formatSeconds(sec){
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function startRecordTimer(){
+  stopRecordTimer();
+  recordStartedAt = Date.now();
+  recTimer.textContent = "00:00";
+  recordTimerId = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - recordStartedAt) / 1000);
+    recTimer.textContent = formatSeconds(elapsed);
+  }, 250);
+}
+
+function stopRecordTimer(){
+  if(recordTimerId){
+    clearInterval(recordTimerId);
+    recordTimerId = null;
+  }
+}
+
+function setRecordingUIState(state){
+  const t = I18N[LANG];
+
+  if(state === "recording"){
+    recordWrap.classList.add("recording");
+    recStateText.textContent = t.recRecordingState;
+    btnRecStart.disabled = true;
+    btnRecStop.disabled = false;
+    btnRecReset.disabled = true;
+    btnRecSave.disabled = true;
+  }else if(state === "recorded"){
+    recordWrap.classList.remove("recording");
+    recStateText.textContent = t.recRecordedState;
+    btnRecStart.disabled = false;
+    btnRecStop.disabled = true;
+    btnRecReset.disabled = false;
+    btnRecSave.disabled = false;
+  }else{
+    recordWrap.classList.remove("recording");
+    recStateText.textContent = t.recIdle;
+    btnRecStart.disabled = !canRecord();
+    btnRecStop.disabled = true;
+    btnRecReset.disabled = !recordedBlob;
+    btnRecSave.disabled = !recordedBlob;
+  }
+}
+
+function cleanupStream(){
+  if(mediaStream){
+    mediaStream.getTracks().forEach(track => track.stop());
+    mediaStream = null;
+  }
+}
+
+function clearRecording({ keepStatus = false } = {}){
+  stopRecordTimer();
+  cleanupStream();
+
+  if(mediaRecorder && mediaRecorder.state !== "inactive"){
+    try{ mediaRecorder.stop(); }catch(e){}
+  }
+  mediaRecorder = null;
+  recordChunks = [];
+  recordedMimeType = "";
+
+  if(recordedAudio.src){
+    URL.revokeObjectURL(recordedAudio.src);
+  }
+  recordedAudio.removeAttribute("src");
+  recordedAudio.style.display = "none";
+  recordedBlob = null;
+  recTimer.textContent = "00:00";
+
+  setRecordingUIState("idle");
+  if(!keepStatus) recStatus.textContent = "";
+}
+
+async function startRecording(){
+  const t = I18N[LANG];
+
+  if(!canRecord()){
+    recStatus.textContent = `${t.recUnsupported} ${t.recHttpsHint}`;
+    setRecordingUIState("idle");
+    return;
+  }
+
+  try{
+    clearRecording({ keepStatus: true });
+    recStatus.textContent = t.recPreparing;
+
+    const mimeType = pickSupportedMimeType();
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    });
+
+    recordChunks = [];
+    recordedBlob = null;
+    recordedMimeType = mimeType || "audio/webm";
+
+    mediaRecorder = mimeType
+      ? new MediaRecorder(mediaStream, { mimeType })
+      : new MediaRecorder(mediaStream);
+
+    mediaRecorder.ondataavailable = (e) => {
+      if(e.data && e.data.size > 0){
+        recordChunks.push(e.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      stopRecordTimer();
+
+      if(recordChunks.length){
+        recordedBlob = new Blob(recordChunks, {
+          type: mediaRecorder?.mimeType || recordedMimeType || "audio/webm"
+        });
+
+        const url = URL.createObjectURL(recordedBlob);
+        recordedAudio.src = url;
+        recordedAudio.style.display = "block";
+
+        setRecordingUIState("recorded");
+        recStatus.textContent = t.recStopped;
+      }else{
+        setRecordingUIState("idle");
+      }
+
+      cleanupStream();
+      mediaRecorder = null;
+    };
+
+    mediaRecorder.start();
+    startRecordTimer();
+    setRecordingUIState("recording");
+    recStatus.textContent = t.recRecording;
+  }catch(e){
+    stopRecordTimer();
+    cleanupStream();
+    mediaRecorder = null;
+    setRecordingUIState("idle");
+    recStatus.textContent = `${t.recPermissionDenied} (${e.message || e})`;
+  }
+}
+
+function stopRecording(){
+  if(mediaRecorder && mediaRecorder.state !== "inactive"){
+    mediaRecorder.stop();
+  }
+}
+
+function getRecordingExtension(mimeType){
+  if(!mimeType) return "webm";
+  if(mimeType.includes("mp4")) return "m4a";
+  if(mimeType.includes("ogg")) return "ogg";
+  return "webm";
+}
+
+function saveBlobToFile(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+async function saveRecording(){
+  const t = I18N[LANG];
+
+  if(!recordedBlob){
+    recStatus.textContent = t.recNoData;
+    return;
+  }
+
+  const info = currentVerseInfo() || {
+    no: 0,
+    ref: "verse",
+    target: todayISO()
+  };
+
+  const ext = getRecordingExtension(recordedBlob.type);
+  const safeName = getRecorderName();
+
+  const filename = safeName
+    ? t.recFileNameWithName(info.no, info.ref, safeName, info.target, ext)
+    : t.recFileNameNoName(info.no, info.ref, info.target, ext);
+
+  try{
+    saveBlobToFile(recordedBlob, filename);
+    recStatus.textContent = t.recSaved;
+  }catch(e){
+    recStatus.textContent = `${t.recNoData} (${e.message || e})`;
+  }
+}
+
+function resetRecording(){
+  const t = I18N[LANG];
+  clearRecording({ keepStatus: true });
+  recStatus.textContent = t.recDeleted;
 }
 
 btnKo.onclick = () => applyLang("ko");
@@ -739,14 +1240,45 @@ btnToday.onclick = () => {
 btnPrev.onclick = () => moveDay(-1);
 btnNext.onclick = () => moveDay(1);
 
-startInput.onchange = render;
+startInput.onchange = () => {
+  updateDateLimits();
+  render();
+};
 targetInput.onchange = render;
+
+btnRecStart.onclick = startRecording;
+btnRecStop.onclick = stopRecording;
+btnRecReset.onclick = resetRecording;
+btnRecSave.onclick = saveRecording;
+
+recorderNameInput.addEventListener("input", () => {
+  localStorage.setItem(STORAGE_RECORDER_NAME, recorderNameInput.value);
+});
+
+window.addEventListener("pagehide", () => {
+  stopRecordTimer();
+  cleanupStream();
+});
 
 async function init(){
   LANG = detectDefaultLang();
   startInput.value = localStorage.getItem(STORAGE_START) || DEFAULT_START;
   targetInput.value = todayISO();
-  await applyLang(LANG);
+  recorderNameInput.value = localStorage.getItem(STORAGE_RECORDER_NAME) || "";
+  setUIText();
+
+  const ok = await loadVerses();
+  if(ok) render();
+
+  if(!canRecord()){
+    recStatus.textContent = `${I18N[LANG].recUnsupported} ${I18N[LANG].recHttpsHint}`;
+    btnRecStart.disabled = true;
+    btnRecStop.disabled = true;
+    btnRecReset.disabled = true;
+    btnRecSave.disabled = true;
+  }else{
+    setRecordingUIState("idle");
+  }
 }
 
 init();
